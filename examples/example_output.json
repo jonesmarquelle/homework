@@ -1,0 +1,282 @@
+{
+  "class_name": "Unknown",
+  "course_code": "Unknown",
+  "assignments": [
+    {
+      "name": "Lab JDK and IDE (Submission Link)",
+      "due_date": "2025-09-06",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804567"
+    },
+    {
+      "name": "Lab Classes (Submission Link)",
+      "due_date": "2025-09-06",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804578"
+    },
+    {
+      "name": "Lab Methods (Submission Link)",
+      "due_date": "2025-09-13",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804587"
+    },
+    {
+      "name": "Lab Exceptions (Submission Link)",
+      "due_date": "2025-09-13",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804588"
+    },
+    {
+      "name": "Lab File Input/Output (Submission Link)",
+      "due_date": "2025-09-20",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804589"
+    },
+    {
+      "name": "Lab Collections (Submission Link)",
+      "due_date": "2025-09-20",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804590"
+    },
+    {
+      "name": "Assignment 1A (Submission Link)",
+      "due_date": "2025-09-22",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804596"
+    },
+    {
+      "name": "Assignment 1B (Submission Link)",
+      "due_date": "2025-09-22",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804597"
+    },
+    {
+      "name": "Lab Shadowing (Submission Link)",
+      "due_date": "2025-09-27",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804591"
+    },
+    {
+      "name": "Lab Sorting and Searching (Submission Link)",
+      "due_date": "2025-09-27",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804594"
+    },
+    {
+      "name": "Assignment 2A (Submission Link)",
+      "due_date": "2025-09-29",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804598"
+    },
+    {
+      "name": "Assignment 2B (Submission Link)",
+      "due_date": "2025-09-29",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804599"
+    },
+    {
+      "name": "Lab Static (Submission Link)",
+      "due_date": "2025-10-04",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804568"
+    },
+    {
+      "name": "Lab Nested Classes (Submission Link)",
+      "due_date": "2025-10-04",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804592"
+    },
+    {
+      "name": "Assignment 3 (Submission Link)",
+      "due_date": "2025-10-06",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804600"
+    },
+    {
+      "name": "Lab Access Modifiers (Submission Link)",
+      "due_date": "2025-10-11",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804569"
+    },
+    {
+      "name": "Lab Write Once Run Anywhere (Please note, this is the only ungraded lab)",
+      "due_date": "2025-10-11",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804570"
+    },
+    {
+      "name": "Lab Interfaces (Submission Link)",
+      "due_date": "2025-10-11",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804571"
+    },
+    {
+      "name": "Project 1",
+      "due_date": "2025-10-15",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804608"
+    },
+    {
+      "name": "Midterm Exam",
+      "due_date": "2025-10-17",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804565"
+    },
+    {
+      "name": "Assignment 4 (Submission Link)",
+      "due_date": "2025-10-20",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804601"
+    },
+    {
+      "name": "Lab Inheritance (Submission Link)",
+      "due_date": "2025-10-25",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804572"
+    },
+    {
+      "name": "Lab Polymorphism (Submission Link)",
+      "due_date": "2025-10-25",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804573"
+    },
+    {
+      "name": "Lab Overriding toString, equals, and hashCode (Submission Link)",
+      "due_date": "2025-10-25",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804574"
+    },
+    {
+      "name": "Assignment 5A (Submission Link)",
+      "due_date": "2025-10-27",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804602"
+    },
+    {
+      "name": "Assignment 5B (Submission Link)",
+      "due_date": "2025-10-27",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804603"
+    },
+    {
+      "name": "Lab Abstract classes and methods (Submission Link)",
+      "due_date": "2025-11-01",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804575"
+    },
+    {
+      "name": "Lab Generics pt1 (Submission Link)",
+      "due_date": "2025-11-01",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804576"
+    },
+    {
+      "name": "Lab Generics pt2 (Submission Link)",
+      "due_date": "2025-11-01",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804577"
+    },
+    {
+      "name": "Project 2",
+      "due_date": "2025-11-05",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804609"
+    },
+    {
+      "name": "Lab Packages (Submission Link)",
+      "due_date": "2025-11-05",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804579"
+    },
+    {
+      "name": "Lab Regular Expressions (Submission Link)",
+      "due_date": "2025-11-08",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804580"
+    },
+    {
+      "name": "Lab Enums (Submission Link)",
+      "due_date": "2025-11-08",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804581"
+    },
+    {
+      "name": "Assignment 6 (Submission Link)",
+      "due_date": "2025-11-10",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804604"
+    },
+    {
+      "name": "Evolving interfaces (Submission Link)",
+      "due_date": "2025-11-15",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804582"
+    },
+    {
+      "name": "Lab Debugging (Submission Link)",
+      "due_date": "2025-11-22",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804583"
+    },
+    {
+      "name": "Lab Unit Testing (Submission Link)",
+      "due_date": "2025-11-17",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804584"
+    },
+    {
+      "name": "Assignment 7 (Submission Link)",
+      "due_date": "2025-11-17",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804605"
+    },
+    {
+      "name": "Lab Black box testing (Submission Link)",
+      "due_date": "2025-11-22",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804585"
+    },
+    {
+      "name": "Lab Big O (Please note this lab is not graded)",
+      "due_date": "2025-11-22",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804586"
+    },
+    {
+      "name": "Lab Linked List (Submission Link)",
+      "due_date": "2025-11-25",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804593"
+    },
+    {
+      "name": "Project 3",
+      "due_date": "2025-11-25",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804610"
+    },
+    {
+      "name": "Assignment 8 (Submission Link)",
+      "due_date": "2025-12-01",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804606"
+    },
+    {
+      "name": "Assignment 9 (Submission Link - this Assignment is optional for extra marks)",
+      "due_date": "2025-12-03",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804607"
+    },
+    {
+      "name": "Assignment 10 (Submission Link - this Assignment is optional for extra marks)",
+      "due_date": "2025-12-05",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804595"
+    },
+    {
+      "name": "Final Exam",
+      "due_date": "2025-12-09",
+      "due_time": "11:00 PM",
+      "submission_link": "https://canvas.odu.edu/courses/187791/assignments/2804566"
+    }
+  ]
+}
