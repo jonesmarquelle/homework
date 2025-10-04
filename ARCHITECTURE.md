@@ -63,10 +63,10 @@ PDF Syllabus → Backend (Python) → JSON → Frontend (React) → User Interfa
 
 ## Development Workflow
 
-1. **Setup**: Run `npm run install:all` to install all dependencies
-2. **Backend Development**: Use `npm run dev:backend` for Python development
-3. **Frontend Development**: Use `npm run dev:frontend` for React development
-4. **Full Stack**: Use `npm run dev` to run both simultaneously
+1. **Setup**: Run `yarn install:all` to install all dependencies
+2. **Backend Development**: Use `yarn dev:backend` for Python development
+3. **Frontend Development**: Use `yarn dev:frontend` for React development
+4. **Full Stack**: Use `yarn dev` to run both simultaneously
 
 ## Benefits of This Architecture
 

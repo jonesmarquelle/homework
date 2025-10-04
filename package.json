@@ -7,13 +7,13 @@
     "frontend/assignment-editor"
   ],
   "scripts": {
-    "dev:frontend": "cd frontend/assignment-editor && npm run dev",
-    "build:frontend": "cd frontend/assignment-editor && npm run build",
-    "install:frontend": "cd frontend/assignment-editor && npm install",
+    "dev:frontend": "cd frontend/assignment-editor && yarn dev",
+    "build:frontend": "cd frontend/assignment-editor && yarn build",
+    "install:frontend": "cd frontend/assignment-editor && yarn install",
     "dev:backend": "cd backend && uv run -m src.pdf_analyzer",
     "install:backend": "cd backend && uv sync",
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "install:all": "npm run install:frontend && npm run install:backend"
+    "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
+    "install:all": "yarn install:frontend && yarn install:backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

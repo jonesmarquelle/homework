@@ -21,7 +21,7 @@ This project is organized into three main components:
 
 1. **Install all dependencies:**
    ```bash
-   npm run install:all
+   yarn install:all
    ```
 
 2. **Set up environment variables:**
@@ -34,16 +34,16 @@ This project is organized into three main components:
 
 **Start both frontend and backend:**
 ```bash
-npm run dev
+yarn dev
 ```
 
 **Or start individually:**
 ```bash
 # Frontend only (React app)
-npm run dev:frontend
+yarn dev:frontend
 
 # Backend only (Python PDF analyzer)
-npm run dev:backend
+yarn dev:backend
 ```
 
 ## Usage

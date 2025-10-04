@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: homework-backend
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      # Mount shared directory for type definitions
+      - ./shared:/app/shared:ro
+      # Mount examples directory for PDF files
+      - ./backend/examples:/app/examples:ro
+      # Mount output directory for generated files
+      - ./backend/output:/app/output
+    working_dir: /app
+    # Keep container running for development
+    command: tail -f /dev/null
+    networks:
+      - homework-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/assignment-editor/Dockerfile
+    container_name: homework-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - homework-network
+
+  # Development service for backend (alternative to production build)
+  backend-dev:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: homework-backend-dev
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./shared:/app/shared:ro
+      - ./backend/src:/app/src
+      - ./backend/examples:/app/examples:ro
+      - ./backend/output:/app/output
+    working_dir: /app
+    command: uv run python -m src.pdf_analyzer --help
+    profiles:
+      - dev
+    networks:
+      - homework-network
+
+networks:
+  homework-network:
+    driver: bridge
+
+volumes:
+  backend-output:
+    driver: local

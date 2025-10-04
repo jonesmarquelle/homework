@@ -77,12 +77,12 @@ A sample JSON file (`sample-assignments.json`) is included in the `public` folde
 
 1. Install dependencies:
    ```bash
-   npm install
+   yarn install
    ```
 
 2. Start development server:
    ```bash
-   npm run dev
+   yarn dev
    ```
 
 3. Open http://localhost:5173 in your browser
