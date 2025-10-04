@@ -15,10 +15,15 @@ from typing import Optional
 
 try:
     from google import genai
-    from pydantic import BaseModel, Field
-    from datetime import date
-    from typing import List
     from dotenv import load_dotenv
+    import sys
+    from pathlib import Path
+    
+    # Add the shared directory to the Python path
+    shared_path = Path(__file__).parent.parent.parent / "shared"
+    sys.path.insert(0, str(shared_path))
+    
+    from types import Assignment, Syllabus
 except ImportError as e:
     print(f"Error: Required package not found: {e}")
     print("Please install dependencies using: uv sync")
@@ -26,18 +31,6 @@ except ImportError as e:
 
 # Load environment variables from .env file
 load_dotenv()
-
-class Assignment(BaseModel):
-    name: str = Field(..., description="The full title or name of the assignment.")
-    due_date: date = Field(..., description="The assignment's due date. Must be a valid date.")
-    due_time: str = Field(..., description="The assignment's due time. Must be a valid time.")
-    submission_link: str = Field(..., description="The link to submit the assignment.")
-
-
-class Syllabus(BaseModel):
-    class_name: str = Field(..., description="The official name of the class.")
-    course_code: str = Field(..., description="The official course code of the class.")
-    assignments: List[Assignment] = Field(..., description="A comprehensive list of all assignments found in the syllabus.")
 
 
 def validate_pdf_file(file_path: str) -> bool:

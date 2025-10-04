@@ -1,0 +1,520 @@
+/* CSS Custom Properties for Theme Support */
+:root {
+  /* Light mode colors */
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f2ff;
+  --text-primary: #333333;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --border-primary: #e9ecef;
+  --border-secondary: #ced4da;
+  --accent-primary: #667eea;
+  --accent-secondary: #5a6fd8;
+  --accent-hover: #764ba2;
+  --error-bg: #f8d7da;
+  --error-border: #f5c6cb;
+  --error-text: #721c24;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(102, 126, 234, 0.1);
+  --shadow-overlay: rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode colors */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: #3a3a3a;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-tertiary: #b0b0b0;
+    --border-primary: #404040;
+    --border-secondary: #555555;
+    --accent-primary: #7c8cff;
+    --accent-secondary: #6b7cff;
+    --accent-hover: #8b5cf6;
+    --error-bg: #4a1a1a;
+    --error-border: #6b2c2c;
+    --error-text: #ff6b6b;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --shadow-hover: rgba(124, 140, 255, 0.2);
+    --shadow-overlay: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.App.drag-over {
+  background: var(--shadow-hover);
+  border: 2px dashed var(--accent-primary);
+  border-radius: 12px;
+  position: relative;
+}
+
+.App.drag-over::before {
+  content: "Drop JSON file here to replace current data";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent-primary);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 8px 32px var(--shadow-overlay);
+}
+
+/* File Drop Zone Styles */
+.file-drop-zone {
+  border: 2px dashed var(--border-secondary);
+  border-radius: 12px;
+  padding: 60px 40px;
+  margin: 40px auto;
+  background: var(--bg-primary);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  max-width: 600px;
+}
+
+.file-drop-zone:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+.file-drop-zone.drag-over {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  text-align: center;
+  pointer-events: none;
+}
+
+.drop-zone-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.drop-zone-content h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.drop-zone-content p {
+  color: var(--text-tertiary);
+  margin-bottom: 20px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.file-input-label:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+
+/* Error Message Styles */
+.error-message {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error-icon {
+  font-size: 1.2rem;
+}
+
+/* Editor Container Styles */
+.editor-container {
+  margin-top: 20px;
+}
+
+.reset-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.drag-hint {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.reset-btn {
+  background: var(--text-tertiary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for drop zone */
+@media (max-width: 768px) {
+  .file-drop-zone {
+    padding: 40px 20px;
+    margin: 20px auto;
+  }
+  
+  .drop-zone-icon {
+    font-size: 3rem;
+  }
+  
+  .drop-zone-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .assignment-header {
+    gap: 8px;
+  }
+  
+  .assignment-title-input {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+  
+  .collapse-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* Assignment Editor Styles */
+.assignment-editor {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px var(--shadow);
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.class-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.course-code {
+  font-size: 1.2rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.class-name-input {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.class-name-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.course-code-input {
+  font-size: 1.2rem;
+  font-weight: 400;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: white;
+  padding: 6px 12px;
+  text-align: center;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.course-code-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.class-name,
+.course-code {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.class-name:hover,
+.course-code:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  padding: 24px 30px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.action-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: none;
+}
+
+.export-btn {
+  background: #28a745;
+  color: white;
+}
+
+.export-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.kanban-btn {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.kanban-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+
+.assignments-container {
+  padding: 30px;
+}
+
+.assignments-container h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+}
+
+.assignments-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 1fr);
+  gap: 20px;
+  padding: 0;
+}
+
+
+.assignment-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.assignment-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px var(--shadow-hover);
+}
+
+.assignment-card.collapsed {
+  padding: 12px 20px;
+}
+
+.assignment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assignment-title {
+  flex: 1;
+}
+
+.assignment-title-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.assignment-title-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--shadow-hover);
+}
+
+.collapse-btn {
+  background: var(--bg-secondary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.collapse-btn:hover {
+  background: var(--accent-secondary);
+  transform: scale(1.05);
+}
+
+.assignment-content {
+  margin-top: 16px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}
+
+.assignment-field {
+  margin-bottom: 16px;
+}
+
+.assignment-field:last-of-type {
+  margin-bottom: 0;
+}
+
+.assignment-field label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.assignment-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.assignment-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--shadow-hover);
+}
+
+.assignment-input[type="url"] {
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.assignment-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.assignment-info small {
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  font-style: italic;
+}

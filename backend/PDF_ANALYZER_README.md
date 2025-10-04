@@ -1,6 +1,8 @@
-# Syllabus Extractor with Google Gemini
+# Backend: Syllabus Extractor with Google Gemini
 
-This script extracts structured data from PDF syllabi using Google Gemini API, including class name, course code, and assignments with due dates.
+This Python backend extracts structured data from PDF syllabi using Google Gemini API, including class name, course code, and assignments with due dates.
+
+> **Note**: This is part of the homework management system. See the main README.md for full project setup.
 
 ## Setup
 
