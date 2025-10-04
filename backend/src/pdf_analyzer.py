@@ -23,7 +23,7 @@ try:
     shared_path = Path(__file__).parent.parent.parent / "shared"
     sys.path.insert(0, str(shared_path))
     
-    from types import Assignment, Syllabus
+    from custom_types import Syllabus
 except ImportError as e:
     print(f"Error: Required package not found: {e}")
     print("Please install dependencies using: uv sync")
