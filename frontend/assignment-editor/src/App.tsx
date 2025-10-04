@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import AssignmentEditor from './components/AssignmentEditor';
-import { AssignmentData } from '../../../../shared/types';
+import KanbanView from './components/KanbanView';
+import type { AssignmentData } from '../../../shared/types';
 import './App.css';
 
 function App() {
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<'editor' | 'kanban'>('editor');
 
   const validateAssignmentData = (data: any): data is AssignmentData => {
     return (
@@ -79,11 +81,20 @@ function App() {
   const handleReset = () => {
     setAssignmentData(null);
     setError(null);
+    setView('editor');
+  };
+
+  const handleViewKanban = () => {
+    setView('kanban');
+  };
+
+  const handleBackToEditor = () => {
+    setView('editor');
   };
 
   return (
     <div 
-      className={`App ${isDragOver ? 'drag-over' : ''}`}
+      className={`App ${isDragOver ? 'drag-over' : ''} ${view === 'kanban' ? 'kanban-mode' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -117,13 +128,19 @@ function App() {
 
       {assignmentData && (
         <div className="editor-container">
-          <div className="reset-section">
-            <button className="reset-btn" onClick={handleReset}>
-              Upload Different File
-            </button>
-            <p className="drag-hint">Or drag a new JSON file anywhere on this page</p>
-          </div>
-          <AssignmentEditor data={assignmentData} />
+          {view === 'editor' ? (
+            <>
+              <div className="reset-section">
+                <button className="reset-btn" onClick={handleReset}>
+                  Upload Different File
+                </button>
+                <p className="drag-hint">Or drag a new JSON file anywhere on this page</p>
+              </div>
+              <AssignmentEditor data={assignmentData} onViewKanban={handleViewKanban} />
+            </>
+          ) : (
+            <KanbanView data={assignmentData} onBack={handleBackToEditor} />
+          )}
         </div>
       )}
     </div>

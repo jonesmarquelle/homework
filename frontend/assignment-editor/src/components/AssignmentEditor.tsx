@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { parse, format } from 'date-fns';
-import { Assignment, AssignmentData } from '../../../../shared/types';
+import type { Assignment, AssignmentData } from '../../../../shared/types';
 
 interface AssignmentEditorProps {
   data: AssignmentData;
+  onViewKanban: () => void;
 }
 
 interface EditableAssignment extends Assignment {
@@ -12,7 +13,7 @@ interface EditableAssignment extends Assignment {
   isCollapsed: boolean;
 }
 
-const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data }) => {
+const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban }) => {
   const [assignments, setAssignments] = useState<EditableAssignment[]>([]);
   const [courseName, setCourseName] = useState(data.class_name);
   const [courseCode, setCourseCode] = useState(data.course_code);
@@ -66,7 +67,7 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data }) => {
   };
 
   const handleViewKanbanBoard = () => {
-    console.log('Viewing on Kanban Board...');
+    onViewKanban();
   };
 
   const handleCourseNameClick = () => {

@@ -70,6 +70,14 @@ body {
   transition: all 0.3s ease;
 }
 
+/* Remove padding when in Kanban view to prevent scrollbar */
+.App.kanban-mode {
+  padding: 0;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .App.drag-over {
   background: var(--shadow-hover);
   border: 2px dashed var(--accent-primary);
@@ -517,4 +525,613 @@ body {
   color: var(--text-tertiary);
   font-size: 0.8rem;
   font-style: italic;
+}
+
+/* Kanban View Styles */
+.kanban-view {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: var(--bg-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kanban-header {
+  background: var(--bg-secondary);
+  padding: 20px 30px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.back-button {
+  background: var(--text-tertiary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.back-button:hover {
+  background: var(--text-secondary);
+  transform: translateY(-1px);
+}
+
+.kanban-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.course-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.course-code {
+  background: var(--accent-primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.kanban-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 80px); /* Subtract header height */
+}
+
+.sidebar {
+  width: 280px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+}
+
+.sidebar-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  height: 0; /* This forces the flex item to respect the overflow */
+}
+
+/* Custom scrollbar styling for sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+.board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.no-boards {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-tertiary);
+}
+
+.week-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.week-item {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.week-item:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+}
+
+.week-item.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary);
+  color: white;
+}
+
+.week-item.active:hover {
+  background: var(--accent-secondary);
+}
+
+.week-item.current-week {
+  border-color: #ff4757;
+  border-width: 2px;
+  position: relative;
+}
+
+.week-item.current-week::before {
+  content: "Today";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4757;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.week-item.current-week:hover {
+  border-color: #ff3742;
+  background: var(--bg-tertiary);
+}
+
+.week-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.week-assignment-count {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg-primary);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  font-size: 1.1rem;
+}
+
+.selected-board-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.board-info {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+}
+
+.board-info h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.board-info p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.no-assignments {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+
+.no-assignments p {
+  font-size: 1.1rem;
+}
+
+.weekly-board {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px var(--shadow);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.board-header {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+  color: white;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.board-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.board-columns {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.kanban-column {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  min-height: 400px;
+  min-width: 280px;
+  flex: 1;
+  transition: all 0.2s ease;
+}
+
+.kanban-column.drag-over {
+  border-color: var(--accent-primary);
+  background: var(--bg-tertiary);
+  box-shadow: 0 0 0 2px var(--shadow-hover);
+}
+
+.column-header {
+  background: var(--bg-tertiary);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.column-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.assignment-count {
+  background: var(--accent-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.column-content {
+  padding: 12px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assignment-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px var(--shadow);
+}
+
+.assignment-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 2px 8px var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.assignment-card.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  box-shadow: 0 8px 16px var(--shadow-overlay);
+}
+
+.assignment-card:active {
+  cursor: grabbing;
+}
+
+.assignment-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assignment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.assignment-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+  word-wrap: break-word;
+  flex: 1;
+}
+
+.delete-btn {
+  background: transparent;
+  color: var(--text-tertiary);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.delete-btn:hover {
+  color: var(--text-secondary);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}
+
+.assignment-due-date {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.course-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments for Kanban */
+@media (max-width: 768px) {
+  .kanban-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .kanban-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .kanban-layout {
+    flex-direction: column;
+    height: calc(100vh - 120px); /* Adjust for mobile header height */
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-primary);
+    flex-shrink: 0;
+  }
+  
+  .sidebar-content {
+    padding: 12px;
+  }
+  
+  .week-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 12px;
+  }
+  
+  .week-item {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+  
+  .week-item.current-week::before {
+    font-size: 0.6rem;
+    padding: 1px 4px;
+    top: -6px;
+    right: -6px;
+  }
+  
+  .board-columns {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .kanban-column {
+    min-width: 240px;
+    min-height: 300px;
+  }
+  
+  .column-content {
+    padding: 8px;
+    min-height: 120px;
+  }
+  
+  .assignment-card {
+    padding: 10px;
+  }
+  
+  .assignment-name {
+    font-size: 0.85rem;
+  }
+  
+  .assignment-due-date {
+    font-size: 0.75rem;
+  }
+  
+  .course-tag {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+  
+  .delete-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+  }
+  
+  .board-info {
+    padding: 12px 16px;
+  }
+  
+  .board-info h2 {
+    font-size: 1.1rem;
+  }
+  
+  .board-info p {
+    font-size: 0.8rem;
+  }
+  
+  .selected-board-container {
+    max-width: 100%;
+  }
+  
+  .weekly-board {
+    max-width: 100%;
+  }
+}
+
+/* Medium screens - adjust centering */
+@media (max-width: 1024px) {
+  .selected-board-container {
+    max-width: 100%;
+  }
+  
+  .weekly-board {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 16px;
+    justify-content: center;
+  }
+  
+  .selected-board-container {
+    max-width: 100%;
+  }
+  
+  .weekly-board {
+    max-width: 100%;
+  }
+  
+  .kanban-column {
+    min-width: 200px;
+    min-height: 250px;
+  }
+  
+  .board-header {
+    padding: 12px 16px;
+  }
+  
+  .board-header h2 {
+    font-size: 1rem;
+  }
+  
+  .week-item {
+    min-width: 160px;
+    padding: 10px 12px;
+  }
+  
+  .week-title {
+    font-size: 0.8rem;
+  }
+  
+  .week-assignment-count {
+    font-size: 0.7rem;
+  }
+  
+  .week-item.current-week::before {
+    font-size: 0.5rem;
+    padding: 1px 3px;
+    top: -4px;
+    right: -4px;
+  }
 }
