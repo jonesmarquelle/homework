@@ -22,8 +22,14 @@ try:
     # Add the shared directory to the Python path
     shared_path = Path(__file__).parent.parent.parent / "shared"
     sys.path.insert(0, str(shared_path))
+    src_path = Path(__file__).parent
+    sys.path.insert(0, str(src_path))
     
     from custom_types import Syllabus
+    
+    # Import database functions
+    from database import create_tables
+    from db_helpers import upsert_syllabus, get_db_session
 except ImportError as e:
     print(f"Error: Required package not found: {e}")
     print("Please install dependencies using: uv sync")
@@ -112,6 +118,37 @@ Look for submission links in various formats like URLs, Canvas links, or referen
         return None
 
 
+def push_to_database(syllabus_data: Syllabus) -> bool:
+    """
+    Push the extracted syllabus data to the database.
+    
+    Args:
+        syllabus_data: The parsed Syllabus object
+        
+    Returns:
+        True if successful, False if error occurred
+    """
+    try:
+        # Ensure database tables exist
+        create_tables()
+        
+        # Get database session and push data
+        db = get_db_session()
+        try:
+            db_syllabus = upsert_syllabus(db, syllabus_data)
+            print("Syllabus successfully saved to database!")
+            print(f"Course Code: {db_syllabus.course_code}")
+            print(f"Database ID: {db_syllabus.id}")
+            print(f"Number of assignments saved: {len(db_syllabus.assignments)}")
+            return True
+        finally:
+            db.close()
+            
+    except Exception as e:
+        print(f"Error pushing to database: {str(e)}")
+        return False
+
+
 def main():
     """Main function to handle command line arguments and execute syllabus extraction."""
     parser = argparse.ArgumentParser(
@@ -122,6 +159,8 @@ Examples:
   python pdf_analyzer.py syllabus.pdf
   python pdf_analyzer.py syllabus.pdf --output syllabus.json
   python pdf_analyzer.py syllabus.pdf --output syllabus.txt
+  python pdf_analyzer.py syllabus.pdf --push-to-db
+  python pdf_analyzer.py syllabus.pdf --push-to-db --output syllabus.json
         """
     )
     
@@ -133,6 +172,12 @@ Examples:
     parser.add_argument(
         "--output",
         help="Optional output file to save the structured data (JSON or text format)"
+    )
+    
+    parser.add_argument(
+        "--push-to-db",
+        action="store_true",
+        help="Push the extracted syllabus data to the database"
     )
     
     args = parser.parse_args()
@@ -162,6 +207,13 @@ Examples:
         print(f"     Due: {assignment.due_date} at {assignment.due_time}")
         print(f"     Submission: {assignment.submission_link}")
     print("="*60)
+    
+    # Push to database if requested
+    if args.push_to_db:
+        print("\nPushing syllabus data to database...")
+        if not push_to_database(syllabus_data):
+            print("Failed to push data to database.")
+            sys.exit(1)
     
     # Save to output file if specified
     if args.output:

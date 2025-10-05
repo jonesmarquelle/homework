@@ -13,6 +13,8 @@ services:
       - ./backend/examples:/app/examples:ro
       # Mount output directory for generated files
       - ./backend/output:/app/output
+      # Mount database volume for SQLite
+      - homework-db:/app/data
     working_dir: /app
     # Keep container running for development
     command: tail -f /dev/null
@@ -44,6 +46,7 @@ services:
       - ./backend/src:/app/src
       - ./backend/examples:/app/examples:ro
       - ./backend/output:/app/output
+      - homework-db:/app/data
     working_dir: /app
     command: uv run python -m src.pdf_analyzer --help
     profiles:
@@ -57,4 +60,6 @@ networks:
 
 volumes:
   backend-output:
+    driver: local
+  homework-db:
     driver: local
