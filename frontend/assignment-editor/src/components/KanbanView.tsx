@@ -16,14 +16,17 @@ import { parse, format, startOfWeek, endOfWeek, isWithinInterval } from 'date-fn
 import type { AssignmentData, Assignment } from '../../../../shared/types';
 
 interface KanbanViewProps {
-  data: AssignmentData;
+  data: AssignmentData | AssignmentData[];
   onBack: () => void;
+  isUnified?: boolean;
 }
 
 interface AssignmentWithId extends Assignment {
   id: string;
   dueDateTime: Date;
   courseCode: string;
+  class_name?: string;
+  syllabus_id?: number;
 }
 
 interface WeeklyBoard {
@@ -67,7 +70,8 @@ const AssignmentCard: React.FC<{
   assignment: AssignmentWithId;
   courseColor: string;
   onDelete: (assignmentId: string) => void;
-}> = ({ assignment, courseColor, onDelete }) => {
+  isUnified?: boolean;
+}> = ({ assignment, courseColor, onDelete, isUnified = false }) => {
   const {
     attributes,
     listeners,
@@ -116,6 +120,11 @@ const AssignmentCard: React.FC<{
             : format(assignment.dueDateTime, 'MMM dd, yyyy h:mm a')
           }
         </div>
+        {isUnified && assignment.class_name && (
+          <div className="assignment-class-name" title={assignment.class_name}>
+            {assignment.class_name}
+          </div>
+        )}
         <div 
           className="course-tag"
           style={{ backgroundColor: courseColor }}
@@ -133,7 +142,8 @@ const Column: React.FC<{
   assignments: AssignmentWithId[];
   courseColors: Record<string, string>;
   onDeleteAssignment: (assignmentId: string) => void;
-}> = ({ column, assignments, courseColors, onDeleteAssignment }) => {
+  isUnified?: boolean;
+}> = ({ column, assignments, courseColors, onDeleteAssignment, isUnified = false }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
   });
@@ -156,6 +166,7 @@ const Column: React.FC<{
               assignment={assignment}
               courseColor={courseColors[assignment.courseCode]}
               onDelete={onDeleteAssignment}
+              isUnified={isUnified}
             />
           ))}
         </div>
@@ -170,7 +181,8 @@ const WeeklyBoard: React.FC<{
   courseColors: Record<string, string>;
   onAssignmentMove: (assignmentId: string, newColumn: string, weekNumber: number) => void;
   onDeleteAssignment: (assignmentId: string, weekNumber: number) => void;
-}> = ({ board, courseColors, onAssignmentMove, onDeleteAssignment }) => {
+  isUnified?: boolean;
+}> = ({ board, courseColors, onAssignmentMove, onDeleteAssignment, isUnified = false }) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: 'not-started', title: 'Not Started', assignments: board.assignments },
     { id: 'in-progress', title: 'In Progress', assignments: [] },
@@ -267,6 +279,7 @@ const WeeklyBoard: React.FC<{
               assignments={column.assignments}
               courseColors={courseColors}
               onDeleteAssignment={handleDeleteAssignment}
+              isUnified={isUnified}
             />
           ))}
         </div>
@@ -282,7 +295,8 @@ const AllAssignmentsBoard: React.FC<{
   assignmentStatuses: Record<string, string>;
   onAssignmentMove: (assignmentId: string, newColumn: string) => void;
   onDeleteAssignment: (assignmentId: string) => void;
-}> = ({ board, courseColors, assignmentStatuses, onAssignmentMove, onDeleteAssignment }) => {
+  isUnified?: boolean;
+}> = ({ board, courseColors, assignmentStatuses, onAssignmentMove, onDeleteAssignment, isUnified = false }) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: 'not-started', title: 'Not Started', assignments: board.assignments },
     { id: 'in-progress', title: 'In Progress', assignments: [] },
@@ -354,6 +368,7 @@ const AllAssignmentsBoard: React.FC<{
               assignments={column.assignments}
               courseColors={courseColors}
               onDeleteAssignment={handleDeleteAssignment}
+              isUnified={isUnified}
             />
           ))}
         </div>
@@ -362,14 +377,31 @@ const AllAssignmentsBoard: React.FC<{
   );
 };
 
-const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
+const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false }) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedBoardType, setSelectedBoardType] = useState<'weekly' | 'all-assignments'>('weekly');
   const [assignmentStatuses, setAssignmentStatuses] = useState<Record<string, string>>({});
 
   // Process assignments and group by weeks
   const weeklyBoards = useMemo(() => {
-    const assignmentsWithId: AssignmentWithId[] = data.assignments.map((assignment, index) => {
+    // Handle both single data and array of data
+    const allAssignments = Array.isArray(data) 
+      ? data.flatMap(syllabus => 
+          syllabus.assignments.map(assignment => ({
+            ...assignment,
+            courseCode: syllabus.course_code,
+            class_name: syllabus.class_name,
+            syllabus_id: syllabus.id
+          }))
+        )
+      : data.assignments.map(assignment => ({
+          ...assignment,
+          courseCode: data.course_code,
+          class_name: data.class_name,
+          syllabus_id: data.id
+        }));
+
+    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment, index) => {
       const dateTimeString = `${assignment.due_date} ${assignment.due_time}`;
       let dueDateTime: Date;
       
@@ -387,9 +419,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
       
       return {
         ...assignment,
-        id: `assignment-${index}`,
+        id: `assignment-${assignment.syllabus_id}-${index}`,
         dueDateTime,
-        courseCode: data.course_code,
+        courseCode: assignment.courseCode,
       };
     });
 
@@ -440,7 +472,24 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
 
   // Create all assignments board
   const allAssignmentsBoard = useMemo(() => {
-    const assignmentsWithId: AssignmentWithId[] = data.assignments.map((assignment, index) => {
+    // Handle both single data and array of data
+    const allAssignments = Array.isArray(data) 
+      ? data.flatMap(syllabus => 
+          syllabus.assignments.map(assignment => ({
+            ...assignment,
+            courseCode: syllabus.course_code,
+            class_name: syllabus.class_name,
+            syllabus_id: syllabus.id
+          }))
+        )
+      : data.assignments.map(assignment => ({
+          ...assignment,
+          courseCode: data.course_code,
+          class_name: data.class_name,
+          syllabus_id: data.id
+        }));
+
+    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment, index) => {
       const dateTimeString = `${assignment.due_date} ${assignment.due_time}`;
       let dueDateTime: Date;
       
@@ -458,18 +507,18 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
       
       return {
         ...assignment,
-        id: `assignment-${index}`,
+        id: `assignment-${assignment.syllabus_id}-${index}`,
         dueDateTime,
-        courseCode: data.course_code,
+        courseCode: assignment.courseCode,
       };
     });
 
     return {
       id: 'all-assignments' as const,
-      title: 'All Assignments',
+      title: isUnified ? 'All Assignments (Unified View)' : 'All Assignments',
       assignments: assignmentsWithId,
     };
-  }, [data]);
+  }, [data, isUnified]);
 
   // Generate course colors
   const courseColors = useMemo(() => {
@@ -485,10 +534,25 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
     return colors;
   }, [weeklyBoards]);
 
-  // Auto-select the first week when boards are loaded
+  // Auto-select the current week or first week when boards are loaded
   useEffect(() => {
     if (weeklyBoards.length > 0 && selectedWeek === null && selectedBoardType === 'weekly') {
-      setSelectedWeek(weeklyBoards[0].weekNumber);
+      const today = new Date();
+      
+      // Find the week that contains today's date
+      const currentWeek = weeklyBoards.find(board => 
+        isWithinInterval(today, {
+          start: board.startDate,
+          end: board.endDate,
+        })
+      );
+      
+      if (currentWeek) {
+        setSelectedWeek(currentWeek.weekNumber);
+      } else {
+        // If today is not in any week, select the first week
+        setSelectedWeek(weeklyBoards[0].weekNumber);
+      }
     }
   }, [weeklyBoards, selectedWeek, selectedBoardType]);
 
@@ -535,11 +599,24 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
     <div className="kanban-view">
       <div className="kanban-header">
         <button className="back-button" onClick={onBack}>
-          ← Back to Editor
+          ← {isUnified ? 'Back to Home' : 'Back to Editor'}
         </button>
-        <h1>Kanban Board - {data.class_name}</h1>
+        <h1>
+          {isUnified 
+            ? 'Unified Kanban Board - All Courses' 
+            : `Kanban Board - ${Array.isArray(data) ? 'Multiple Courses' : data.class_name}`
+          }
+        </h1>
         <div className="course-info">
-          <span className="course-code">{data.course_code}</span>
+          {isUnified ? (
+            <span className="course-code">
+              {Array.isArray(data) ? `${data.length} course${data.length !== 1 ? 's' : ''}` : '1 course'}
+            </span>
+          ) : (
+            <span className="course-code">
+              {Array.isArray(data) ? 'Multiple Courses' : data.course_code}
+            </span>
+          )}
         </div>
       </div>
 
@@ -607,6 +684,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
                 assignmentStatuses={assignmentStatuses}
                 onAssignmentMove={handleAllAssignmentsMove}
                 onDeleteAssignment={handleAllAssignmentsDelete}
+                isUnified={isUnified}
               />
             </div>
           ) : selectedBoard ? (
@@ -621,6 +699,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack }) => {
                 courseColors={courseColors}
                 onAssignmentMove={handleAssignmentMove}
                 onDeleteAssignment={handleDeleteAssignment}
+                isUnified={isUnified}
               />
             </div>
           ) : (

@@ -306,6 +306,38 @@ body {
   margin-top: 20px;
 }
 
+.editor-header {
+  margin-bottom: 20px;
+}
+
+.back-to-home-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-to-home-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-hover);
+}
+
+.back-to-home-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px var(--shadow);
+}
+
 .reset-section {
   text-align: center;
   margin-bottom: 20px;
@@ -1095,6 +1127,16 @@ body {
   font-weight: 500;
 }
 
+.assignment-class-name {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .course-tag {
   display: inline-block;
   padding: 4px 8px;
@@ -1396,12 +1438,47 @@ body {
   border: 1px solid var(--border-primary);
 }
 
+.syllabi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
 .saved-syllabi-section h3 {
-  margin: 0 0 20px 0;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
-  text-align: center;
+}
+
+.unified-view-btn {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unified-view-btn:hover {
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-hover));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-hover);
+}
+
+.unified-view-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .syllabi-list {

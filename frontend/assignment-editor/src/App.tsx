@@ -13,7 +13,7 @@ function App() {
   const [isLoadingSyllabi, setIsLoadingSyllabi] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<'editor' | 'kanban'>('editor');
+  const [view, setView] = useState<'editor' | 'kanban' | 'unified-kanban'>('editor');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
@@ -137,6 +137,12 @@ function App() {
     setView('editor');
   };
 
+  const handleBackToHome = () => {
+    setAssignmentData(null);
+    setSyllabusId(null);
+    setView('editor');
+  };
+
   const handleEditSyllabus = (syllabus: any) => {
     // Convert backend syllabus format to frontend format
     const convertedData: AssignmentData = {
@@ -173,6 +179,29 @@ function App() {
     setAssignmentData(convertedData);
     setSyllabusId(syllabus.id);
     setView('kanban');
+  };
+
+  const handleViewUnifiedKanban = () => {
+    if (savedSyllabi.length === 0) {
+      setError('No syllabi available for unified view');
+      return;
+    }
+    
+    // Convert all syllabi to frontend format
+    const convertedSyllabi: AssignmentData[] = savedSyllabi.map(syllabus => ({
+      id: syllabus.id,
+      class_name: syllabus.class_name,
+      course_code: syllabus.course_code,
+      assignments: syllabus.assignments.map((assignment: any) => ({
+        name: assignment.name,
+        due_date: assignment.due_date,
+        due_time: assignment.due_time,
+        submission_link: assignment.submission_link
+      }))
+    }));
+    
+    setAssignmentData(convertedSyllabi as any);
+    setView('unified-kanban');
   };
 
   const handleDeleteClick = (syllabus: any) => {
@@ -239,7 +268,16 @@ function App() {
           
           {savedSyllabi.length > 0 && (
             <div className="saved-syllabi-section">
-              <h3>Saved Syllabi</h3>
+              <div className="syllabi-header">
+                <h3>Saved Syllabi</h3>
+                <button 
+                  className="unified-view-btn"
+                  onClick={handleViewUnifiedKanban}
+                  title="View all assignments from all courses in one kanban board"
+                >
+                  📋 Unified Kanban View
+                </button>
+              </div>
               <div className="syllabi-list">
                 {isLoadingSyllabi ? (
                   <div className="loading-syllabi">Loading saved syllabi...</div>
@@ -330,6 +368,11 @@ function App() {
         <div className="editor-container">
           {view === 'editor' ? (
             <>
+              <div className="editor-header">
+                <button className="back-to-home-btn" onClick={handleBackToHome}>
+                  ← Back to Home
+                </button>
+              </div>
               <div className="reset-section">
                 <button className="reset-btn" onClick={handleReset}>
                   Upload Different File
@@ -343,8 +386,10 @@ function App() {
                 onDataChange={handleDataChange}
               />
             </>
-          ) : (
+          ) : view === 'kanban' ? (
             <KanbanView data={assignmentData} onBack={handleBackToEditor} />
+          ) : (
+            <KanbanView data={assignmentData} onBack={handleBackToHome} isUnified={true} />
           )}
         </div>
       )}
