@@ -18,6 +18,7 @@ class Assignment(BaseModel):
 
 class Syllabus(BaseModel):
     """Represents a complete syllabus with class information and assignments."""
+    id: int = Field(..., description="The unique identifier of the syllabus in the database.")
     class_name: str = Field(..., description="The official name of the class.")
     course_code: str = Field(..., description="The official course code of the class.")
     assignments: List[Assignment] = Field(..., description="A comprehensive list of all assignments found in the syllabus.")
@@ -25,6 +26,7 @@ class Syllabus(BaseModel):
 
 class AssignmentData(BaseModel):
     """Alternative name for Syllabus to match frontend naming conventions."""
+    id: int = Field(..., description="The unique identifier of the syllabus in the database.")
     class_name: str = Field(..., description="The official name of the class.")
     course_code: str = Field(..., description="The official course code of the class.")
     assignments: List[Assignment] = Field(..., description="A comprehensive list of all assignments found in the syllabus.")

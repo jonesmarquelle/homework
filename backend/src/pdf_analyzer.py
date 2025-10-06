@@ -10,6 +10,7 @@ import os
 import sys
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -19,11 +20,9 @@ try:
     import sys
     from pathlib import Path
     
-    # Add the shared directory to the Python path
-    shared_path = Path(__file__).parent.parent.parent / "shared"
-    sys.path.insert(0, str(shared_path))
-    src_path = Path(__file__).parent
-    sys.path.insert(0, str(src_path))
+    # Set up shared paths
+    from path_utils import setup_shared_paths
+    setup_shared_paths()
     
     from custom_types import Syllabus
     
@@ -81,7 +80,8 @@ def extract_syllabus_structure(pdf_path: str) -> Optional[Syllabus]:
         print(f"File ID: {uploaded_file.name}")
         
         # Create the extraction prompt
-        prompt = """Extract the syllabus information from this document. 
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        prompt = f"""Extract the syllabus information from this document. 
 Focus on finding:
 1. The official class name
 2. The course code (e.g., CS 251, MATH 101)
@@ -94,6 +94,8 @@ For assignments, extract:
 - The submission link (if not specified, use "N/A" as default)
 
 IMPORTANT: All dates must be in YYYY-MM-DD format. Do not use MMDD-01-20 or any other format.
+
+Note: The current date is {current_date}. Any ambiguous year dates should be interpreted as the current year.
 
 Look for submission links in various formats like URLs, Canvas links, or references to submission platforms.
 """

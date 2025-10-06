@@ -8,26 +8,26 @@ from sqlalchemy.orm import Session
 from datetime import date
 
 from database import AssignmentDB, SyllabusDB, get_db_session
-import sys
-import os
 
-# Add the shared directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+# Set up shared paths
+from path_utils import setup_shared_paths
+setup_shared_paths()
 from custom_types import Assignment, Syllabus, AssignmentData
 
 
 def upsert_syllabus(db: Session, syllabus_data: Syllabus) -> SyllabusDB:
-    """Create or update a syllabus in the database based on course code."""
+    """Create or update a syllabus in the database based on ID."""
     from sqlalchemy.orm import joinedload
     
-    # Check if syllabus with this course code already exists
+    # Check if syllabus with this ID already exists
     existing_syllabus = db.query(SyllabusDB).options(joinedload(SyllabusDB.assignments)).filter(
-        SyllabusDB.course_code == syllabus_data.course_code
+        SyllabusDB.id == syllabus_data.id
     ).first()
     
     if existing_syllabus:
         # Update existing syllabus
         existing_syllabus.class_name = syllabus_data.class_name
+        existing_syllabus.course_code = syllabus_data.course_code
         
         # Clear existing assignments
         for assignment in existing_syllabus.assignments:
@@ -55,6 +55,7 @@ def upsert_syllabus(db: Session, syllabus_data: Syllabus) -> SyllabusDB:
         )
         db.add(db_syllabus)
         db.flush()  # Flush to get the ID
+        print("New syllabus ID: ", db_syllabus.id)
         
         # Create assignments
         for assignment in syllabus_data.assignments:
@@ -163,6 +164,7 @@ def db_syllabus_to_pydantic(db_syllabus: SyllabusDB) -> Syllabus:
         assignments.append(assignment)
     
     return Syllabus(
+        id=db_syllabus.id,
         class_name=db_syllabus.class_name,
         course_code=db_syllabus.course_code,
         assignments=assignments
@@ -182,6 +184,7 @@ def db_syllabus_to_assignment_data(db_syllabus: SyllabusDB) -> AssignmentData:
         assignments.append(assignment)
     
     return AssignmentData(
+        id=db_syllabus.id,
         class_name=db_syllabus.class_name,
         course_code=db_syllabus.course_code,
         assignments=assignments

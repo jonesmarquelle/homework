@@ -15,6 +15,8 @@ export interface Assignment {
 }
 
 export interface AssignmentData {
+  /** The unique identifier of the syllabus in the database */
+  id: number;
   /** The official name of the class */
   class_name: string;
   /** The official course code of the class */

@@ -25,12 +25,15 @@ COPY shared /app/shared
 COPY backend/src/ ./src/
 COPY backend/main.py ./
 
+# Create data directory for SQLite database
+RUN mkdir -p /app/data
+
 # Create a non-root user
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
 USER app
 
-# Expose port (if needed for future web API)
+# Expose port for FastAPI server
 EXPOSE 8000
 
 # Default command
-CMD ["uv", "run", "python", "main.py"]
+CMD ["uv", "run", "main.py"]

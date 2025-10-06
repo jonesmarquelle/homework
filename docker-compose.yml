@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: homework-backend
+    ports:
+      - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
@@ -16,8 +18,8 @@ services:
       # Mount database volume for SQLite
       - homework-db:/app/data
     working_dir: /app
-    # Keep container running for development
-    command: tail -f /dev/null
+    # Run the FastAPI server
+    command: uv run python main.py
     networks:
       - homework-network
 
@@ -39,16 +41,19 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: homework-backend-dev
+    ports:
+      - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - ./shared:/app/shared:ro
       - ./backend/src:/app/src
+      - ./backend/main.py:/app/main.py
       - ./backend/examples:/app/examples:ro
       - ./backend/output:/app/output
       - homework-db:/app/data
     working_dir: /app
-    command: uv run python -m src.pdf_analyzer --help
+    command: uv run python main.py
     profiles:
       - dev
     networks:

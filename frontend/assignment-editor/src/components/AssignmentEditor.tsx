@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { parse, format } from 'date-fns';
 import type { Assignment, AssignmentData } from '../../../../shared/types';
+import ConfirmationModal from './ConfirmationModal';
+import { updateSyllabus } from '../services/api';
 
 interface AssignmentEditorProps {
   data: AssignmentData;
   onViewKanban: () => void;
+  syllabusId?: number;
+  onDataChange?: (data: AssignmentData) => void;
 }
 
 interface EditableAssignment extends Assignment {
@@ -13,12 +17,18 @@ interface EditableAssignment extends Assignment {
   isCollapsed: boolean;
 }
 
-const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban }) => {
+const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban, syllabusId, onDataChange }) => {
+  
   const [assignments, setAssignments] = useState<EditableAssignment[]>([]);
   const [courseName, setCourseName] = useState(data.class_name);
   const [courseCode, setCourseCode] = useState(data.course_code);
   const [isEditingCourseName, setIsEditingCourseName] = useState(false);
   const [isEditingCourseCode, setIsEditingCourseCode] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const originalDataRef = useRef<AssignmentData>(data);
 
   // Parse initial data and convert to editable format
   useEffect(() => {
@@ -36,7 +46,27 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban 
     });
     
     setAssignments(parsedAssignments);
+    originalDataRef.current = data;
+    setHasUnsavedChanges(false);
   }, [data]);
+
+  // Check for changes whenever data changes
+  useEffect(() => {
+    const currentData = {
+      id: data.id,
+      class_name: courseName,
+      course_code: courseCode,
+      assignments: assignments.map(assignment => ({
+        name: assignment.name,
+        due_date: assignment.due_date,
+        due_time: assignment.due_time,
+        submission_link: assignment.submission_link
+      }))
+    };
+
+    const hasChanges = JSON.stringify(currentData) !== JSON.stringify(originalDataRef.current);
+    setHasUnsavedChanges(hasChanges);
+  }, [courseName, courseCode, assignments]);
 
   const handleAssignmentChange = (id: string, field: keyof Assignment, value: string) => {
     setAssignments(prev => prev.map(assignment => {
@@ -62,13 +92,6 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban 
     ));
   };
 
-  const handleExportToGoogleCalendar = () => {
-    console.log('Exporting to Google Calendar...');
-  };
-
-  const handleViewKanbanBoard = () => {
-    onViewKanban();
-  };
 
   const handleCourseNameClick = () => {
     setIsEditingCourseName(true);
@@ -92,6 +115,86 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban 
 
   const handleCourseCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCourseCode(e.target.value);
+  };
+
+  const handleSave = async () => {
+    if (!syllabusId) {
+      alert('Save not available: No syllabus ID found. Please re-upload the PDF to enable saving.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updatedData = {
+        id: data.id,
+        class_name: courseName,
+        course_code: courseCode,
+        assignments: assignments.map(assignment => ({
+          name: assignment.name,
+          due_date: assignment.due_date,
+          due_time: assignment.due_time,
+          submission_link: assignment.submission_link
+        }))
+      };
+
+      await updateSyllabus(syllabusId, updatedData);
+      
+      // Update the original data reference
+      originalDataRef.current = updatedData;
+      setHasUnsavedChanges(false);
+      
+      // Notify parent component of data change
+      if (onDataChange) {
+        onDataChange(updatedData);
+      }
+      
+      // Close the modal if it's open
+      if (showConfirmModal) {
+        setShowConfirmModal(false);
+        setPendingAction(null);
+      }
+      
+      console.log('Changes saved successfully');
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('Failed to save changes. Please check your connection and try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleActionWithConfirmation = (action: () => void) => {
+    if (hasUnsavedChanges) {
+      setPendingAction(() => action);
+      setShowConfirmModal(true);
+    } else {
+      action();
+    }
+  };
+
+  const handleConfirmAction = () => {
+    if (pendingAction) {
+      pendingAction();
+    }
+    setShowConfirmModal(false);
+    setPendingAction(null);
+  };
+
+  const handleCancelAction = () => {
+    setShowConfirmModal(false);
+    setPendingAction(null);
+  };
+
+  const handleViewKanbanBoard = () => {
+    handleActionWithConfirmation(() => {
+      onViewKanban();
+    });
+  };
+
+  const handleExportToGoogleCalendar = () => {
+    handleActionWithConfirmation(() => {
+      console.log('Exporting to Google Calendar...');
+    });
   };
 
   return (
@@ -208,6 +311,20 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban 
           ))}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCancelAction}
+        onSave={handleSave}
+        title="Unsaved Changes"
+        message="You have unsaved changes. What would you like to do?"
+        confirmText="Continue Without Saving"
+        cancelText="Cancel"
+        showSave={true}
+        saveText="Save Changes"
+        isSaving={isSaving}
+      />
     </div>
   );
 };

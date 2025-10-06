@@ -10,7 +10,7 @@
     "dev:frontend": "cd frontend/assignment-editor && yarn dev",
     "build:frontend": "cd frontend/assignment-editor && yarn build",
     "install:frontend": "cd frontend/assignment-editor && yarn install",
-    "dev:backend": "cd backend && uv run -m src.pdf_analyzer",
+    "dev:backend": "cd backend && uv run python main.py",
     "install:backend": "cd backend && uv sync",
     "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
     "install:all": "yarn install:frontend && yarn install:backend"

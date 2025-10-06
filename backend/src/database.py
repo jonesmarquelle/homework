@@ -12,6 +12,11 @@ import os
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/homework.db")
 
+# Ensure data directory exists
+if "sqlite" in DATABASE_URL:
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
 # Create engine
 engine = create_engine(
     DATABASE_URL,
