@@ -11,10 +11,12 @@ export interface AnalysisResponse {
     class_name: string;
     course_code: string;
     assignments: Array<{
+      id: number;
       name: string;
       due_date: string;
       due_time: string;
       submission_link: string;
+      status: string;
     }>;
   };
   error?: string;
@@ -129,6 +131,25 @@ export async function updateSyllabus(syllabusId: number, syllabusData: any): Pro
 export async function deleteSyllabus(syllabusId: number): Promise<DatabaseResponse> {
   const response = await fetch(`${API_BASE_URL}/syllabi/${syllabusId}`, {
     method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Update assignment status
+ */
+export async function updateAssignmentStatus(assignmentId: number, status: string): Promise<DatabaseResponse> {
+  const response = await fetch(`${API_BASE_URL}/assignments/${assignmentId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(status),
   });
 
   if (!response.ok) {

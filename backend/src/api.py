@@ -7,7 +7,7 @@ Provides REST API endpoints for uploading and analyzing PDF syllabi.
 import os
 import tempfile
 from typing import Optional
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -24,7 +24,7 @@ setup_shared_paths()
 from custom_types import Syllabus
 from pdf_analyzer import extract_syllabus_structure
 from database import create_tables
-from db_helpers import get_db_session, upsert_syllabus, get_all_syllabi_with_session, db_syllabus_to_pydantic, delete_syllabus
+from db_helpers import get_db_session, upsert_syllabus, get_all_syllabi_with_session, db_syllabus_to_pydantic, delete_syllabus, update_assignment_status, get_assignment_by_id
 from database import SyllabusDB
 
 # Response models
@@ -317,6 +317,59 @@ async def delete_syllabus_endpoint(syllabus_id: int):
         return DatabaseResponse(
             success=False,
             message="Failed to delete syllabus",
+            error=str(e)
+        )
+
+@app.put("/assignments/{assignment_id}/status")
+async def update_assignment_status_endpoint(assignment_id: int, status: str = Body(...)):
+    """
+    Update the status of a specific assignment.
+    
+    Args:
+        assignment_id: The ID of the assignment to update
+        status: The new status ("NOT_STARTED", "IN_PROGRESS", or "DONE")
+        
+    Returns:
+        DatabaseResponse with operation result
+    """
+    try:
+        # Ensure database tables exist
+        create_tables()
+        
+        # Get database session and update assignment status
+        db = get_db_session()
+        try:
+            # Check if assignment exists
+            existing_assignment = get_assignment_by_id(db, assignment_id)
+            if not existing_assignment:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Assignment with ID {assignment_id} not found"
+                )
+            
+            # Update the assignment status
+            updated_assignment = update_assignment_status(db, assignment_id, status)
+            
+            if updated_assignment:
+                return DatabaseResponse(
+                    success=True,
+                    message="Assignment status updated successfully",
+                    syllabus_id=updated_assignment.syllabus_id
+                )
+            else:
+                return DatabaseResponse(
+                    success=False,
+                    message="Failed to update assignment status - invalid status value"
+                )
+        finally:
+            db.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        return DatabaseResponse(
+            success=False,
+            message="Failed to update assignment status",
             error=str(e)
         )
 

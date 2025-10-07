@@ -40,6 +40,7 @@ def upsert_syllabus(db: Session, syllabus_data: Syllabus) -> SyllabusDB:
                 due_date=assignment.due_date,
                 due_time=assignment.due_time,
                 submission_link=assignment.submission_link,
+                status=assignment.status,
                 syllabus_id=existing_syllabus.id
             )
             db.add(db_assignment)
@@ -64,6 +65,7 @@ def upsert_syllabus(db: Session, syllabus_data: Syllabus) -> SyllabusDB:
                 due_date=assignment.due_date,
                 due_time=assignment.due_time,
                 submission_link=assignment.submission_link,
+                status=assignment.status,
                 syllabus_id=db_syllabus.id
             )
             db.add(db_assignment)
@@ -111,6 +113,7 @@ def update_syllabus(db: Session, syllabus_id: int, syllabus_data: Syllabus) -> O
             due_date=assignment.due_date,
             due_time=assignment.due_time,
             submission_link=assignment.submission_link,
+            status=assignment.status,
             syllabus_id=syllabus_id
         )
         db.add(db_assignment)
@@ -156,10 +159,12 @@ def db_syllabus_to_pydantic(db_syllabus: SyllabusDB) -> Syllabus:
     assignments = []
     for db_assignment in db_syllabus.assignments:
         assignment = Assignment(
+            id=db_assignment.id,
             name=db_assignment.name,
             due_date=db_assignment.due_date,
             due_time=db_assignment.due_time,
-            submission_link=db_assignment.submission_link
+            submission_link=db_assignment.submission_link,
+            status=db_assignment.status
         )
         assignments.append(assignment)
     
@@ -176,10 +181,12 @@ def db_syllabus_to_assignment_data(db_syllabus: SyllabusDB) -> AssignmentData:
     assignments = []
     for db_assignment in db_syllabus.assignments:
         assignment = Assignment(
+            id=db_assignment.id,
             name=db_assignment.name,
             due_date=db_assignment.due_date,
             due_time=db_assignment.due_time,
-            submission_link=db_assignment.submission_link
+            submission_link=db_assignment.submission_link,
+            status=db_assignment.status
         )
         assignments.append(assignment)
     
@@ -198,6 +205,31 @@ def search_assignments(db: Session, query: str) -> List[AssignmentDB]:
         (SyllabusDB.course_code.ilike(f"%{query}%")) |
         (SyllabusDB.class_name.ilike(f"%{query}%"))
     ).all()
+
+
+def update_assignment_status(db: Session, assignment_id: int, status: str) -> Optional[AssignmentDB]:
+    """Update the status of a specific assignment."""
+    from database import AssignmentStatus
+    
+    # Convert string status to enum
+    try:
+        status_enum = AssignmentStatus(status)
+    except ValueError:
+        return None
+    
+    assignment = db.query(AssignmentDB).filter(AssignmentDB.id == assignment_id).first()
+    if not assignment:
+        return None
+    
+    assignment.status = status_enum
+    db.commit()
+    db.refresh(assignment)
+    return assignment
+
+
+def get_assignment_by_id(db: Session, assignment_id: int) -> Optional[AssignmentDB]:
+    """Get a specific assignment by ID."""
+    return db.query(AssignmentDB).filter(AssignmentDB.id == assignment_id).first()
 
 
 # Convenience functions that handle database sessions

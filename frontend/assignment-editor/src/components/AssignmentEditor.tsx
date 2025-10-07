@@ -12,7 +12,6 @@ interface AssignmentEditorProps {
 }
 
 interface EditableAssignment extends Assignment {
-  id: string;
   dueDateTime: Date;
   isCollapsed: boolean;
 }
@@ -32,14 +31,13 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
 
   // Parse initial data and convert to editable format
   useEffect(() => {
-    const parsedAssignments: EditableAssignment[] = data.assignments.map((assignment, index) => {
+    const parsedAssignments: EditableAssignment[] = data.assignments.map((assignment) => {
       // Combine date and time strings into a Date object
       const dateTimeString = `${assignment.due_date} ${assignment.due_time}`;
       const dueDateTime = parse(dateTimeString, 'yyyy-MM-dd h:mm a', new Date());
       
       return {
         ...assignment,
-        id: `assignment-${index}`,
         dueDateTime,
         isCollapsed: false
       };
@@ -68,7 +66,7 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
     setHasUnsavedChanges(hasChanges);
   }, [courseName, courseCode, assignments]);
 
-  const handleAssignmentChange = (id: string, field: keyof Assignment, value: string) => {
+  const handleAssignmentChange = (id: number, field: keyof Assignment, value: string) => {
     setAssignments(prev => prev.map(assignment => {
       if (assignment.id === id) {
         if (field === 'due_date' || field === 'due_time') {
@@ -84,7 +82,7 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
     }));
   };
 
-  const toggleCollapse = (id: string) => {
+  const toggleCollapse = (id: number) => {
     setAssignments(prev => prev.map(assignment => 
       assignment.id === id 
         ? { ...assignment, isCollapsed: !assignment.isCollapsed }
@@ -130,10 +128,12 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
         class_name: courseName,
         course_code: courseCode,
         assignments: assignments.map(assignment => ({
+          id: assignment.id,
           name: assignment.name,
           due_date: assignment.due_date,
           due_time: assignment.due_time,
-          submission_link: assignment.submission_link
+          submission_link: assignment.submission_link,
+          status: assignment.status
         }))
       };
 

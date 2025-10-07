@@ -3,11 +3,12 @@ Database models and configuration for the homework management system.
 Uses SQLAlchemy to define database tables based on Pydantic models.
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, ForeignKey, Text, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import os
+import enum
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/homework.db")
@@ -30,6 +31,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+class AssignmentStatus(enum.Enum):
+    """Enum for assignment status values."""
+    NOT_STARTED = "NOT_STARTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    DONE = "DONE"
+
+
 class AssignmentDB(Base):
     """SQLAlchemy model for assignments table."""
     __tablename__ = "assignments"
@@ -39,6 +47,7 @@ class AssignmentDB(Base):
     due_date = Column(Date, nullable=False, index=True)
     due_time = Column(String(50), nullable=False)
     submission_link = Column(Text, nullable=False)
+    status = Column(Enum(AssignmentStatus), nullable=False, default=AssignmentStatus.NOT_STARTED)
     
     # Foreign key to syllabus
     syllabus_id = Column(Integer, ForeignKey("syllabi.id"), nullable=False)

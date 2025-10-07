@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import AssignmentEditor from './components/AssignmentEditor';
 import KanbanView from './components/KanbanView';
 import ConfirmationModal from './components/ConfirmationModal';
-import type { AssignmentData } from '../../../shared/types';
+import type { AssignmentData, AssignmentStatus } from '../../../shared/types';
 import { analyzeAndSave, getAllSyllabi, deleteSyllabus } from './services/api';
 import './App.css';
 
@@ -66,10 +66,12 @@ function App() {
           class_name: result.analysis.data.class_name,
           course_code: result.analysis.data.course_code,
           assignments: result.analysis.data.assignments.map(assignment => ({
+            id: assignment.id,
             name: assignment.name,
             due_date: assignment.due_date,
             due_time: assignment.due_time,
-            submission_link: assignment.submission_link
+            submission_link: assignment.submission_link,
+            status: assignment.status as AssignmentStatus
           }))
         };
         
@@ -150,10 +152,12 @@ function App() {
       class_name: syllabus.class_name,
       course_code: syllabus.course_code,
       assignments: syllabus.assignments.map((assignment: any) => ({
+        id: assignment.id,
         name: assignment.name,
         due_date: assignment.due_date,
         due_time: assignment.due_time,
-        submission_link: assignment.submission_link
+        submission_link: assignment.submission_link,
+        status: assignment.status as AssignmentStatus
       }))
     };
     
@@ -169,10 +173,12 @@ function App() {
       class_name: syllabus.class_name,
       course_code: syllabus.course_code,
       assignments: syllabus.assignments.map((assignment: any) => ({
+        id: assignment.id,
         name: assignment.name,
         due_date: assignment.due_date,
         due_time: assignment.due_time,
-        submission_link: assignment.submission_link
+        submission_link: assignment.submission_link,
+        status: assignment.status as AssignmentStatus
       }))
     };
     
@@ -193,10 +199,12 @@ function App() {
       class_name: syllabus.class_name,
       course_code: syllabus.course_code,
       assignments: syllabus.assignments.map((assignment: any) => ({
+        id: assignment.id,
         name: assignment.name,
         due_date: assignment.due_date,
         due_time: assignment.due_time,
-        submission_link: assignment.submission_link
+        submission_link: assignment.submission_link,
+        status: assignment.status as AssignmentStatus
       }))
     }));
     

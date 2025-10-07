@@ -13,16 +13,17 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { parse, format, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
-import type { AssignmentData, Assignment } from '../../../../shared/types';
+import type { AssignmentData, Assignment, AssignmentStatus } from '../../../../shared/types';
+import { updateAssignmentStatus, getAllSyllabi } from '../services/api';
 
 interface KanbanViewProps {
   data: AssignmentData | AssignmentData[];
   onBack: () => void;
   isUnified?: boolean;
+  onDataRefresh?: (freshData: AssignmentData | AssignmentData[]) => void;
 }
 
 interface AssignmentWithId extends Assignment {
-  id: string;
   dueDateTime: Date;
   courseCode: string;
   class_name?: string;
@@ -91,7 +92,7 @@ const AssignmentCard: React.FC<{
     e.stopPropagation(); // Prevent drag when clicking delete
     
     if (window.confirm(`Are you sure you want to delete "${assignment.name}"?`)) {
-      onDelete(assignment.id);
+      onDelete(assignment.id.toString());
     }
   };
 
@@ -179,23 +180,43 @@ const Column: React.FC<{
 const WeeklyBoard: React.FC<{
   board: WeeklyBoard;
   courseColors: Record<string, string>;
-  onAssignmentMove: (assignmentId: string, newColumn: string, weekNumber: number) => void;
+  onAssignmentMove: (assignmentId: number, newColumn: string, weekNumber: number) => void;
   onDeleteAssignment: (assignmentId: string, weekNumber: number) => void;
+  onRefreshData: () => Promise<void>;
   isUnified?: boolean;
-}> = ({ board, courseColors, onAssignmentMove, onDeleteAssignment, isUnified = false }) => {
+}> = ({ board, courseColors, onAssignmentMove, onDeleteAssignment, onRefreshData, isUnified = false }) => {
   const [columns, setColumns] = useState<Column[]>([
-    { id: 'not-started', title: 'Not Started', assignments: board.assignments },
+    { id: 'not-started', title: 'Not Started', assignments: [] },
     { id: 'in-progress', title: 'In Progress', assignments: [] },
     { id: 'done', title: 'Done', assignments: [] },
   ]);
 
-  // Reset columns when board changes
+  // Reset columns when board changes - distribute assignments based on their status
   useEffect(() => {
     console.log(`Resetting columns for week ${board.weekNumber} with ${board.assignments.length} assignments`);
+    
+    const notStarted: AssignmentWithId[] = [];
+    const inProgress: AssignmentWithId[] = [];
+    const done: AssignmentWithId[] = [];
+
+    board.assignments.forEach(assignment => {
+      switch (assignment.status) {
+        case 'NOT_STARTED':
+          notStarted.push(assignment);
+          break;
+        case 'IN_PROGRESS':
+          inProgress.push(assignment);
+          break;
+        case 'DONE':
+          done.push(assignment);
+          break;
+      }
+    });
+
     setColumns([
-      { id: 'not-started', title: 'Not Started', assignments: board.assignments },
-      { id: 'in-progress', title: 'In Progress', assignments: [] },
-      { id: 'done', title: 'Done', assignments: [] },
+      { id: 'not-started', title: 'Not Started', assignments: notStarted },
+      { id: 'in-progress', title: 'In Progress', assignments: inProgress },
+      { id: 'done', title: 'Done', assignments: done },
     ]);
   }, [board.weekNumber, board.assignments]);
 
@@ -204,7 +225,7 @@ const WeeklyBoard: React.FC<{
     setColumns(prevColumns => 
       prevColumns.map(column => ({
         ...column,
-        assignments: column.assignments.filter(a => a.id !== assignmentId)
+        assignments: column.assignments.filter(a => a.id.toString() !== assignmentId)
       }))
     );
     
@@ -212,7 +233,7 @@ const WeeklyBoard: React.FC<{
     onDeleteAssignment(assignmentId, board.weekNumber);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
     console.log('Drag end:', { active: active.id, over: over?.id });
@@ -222,7 +243,7 @@ const WeeklyBoard: React.FC<{
       return;
     }
     
-    const assignmentId = active.id as string;
+    const assignmentId = active.id as number;
     const newColumnId = over.id as string;
     
     // Check if the drop target is a valid column
@@ -234,35 +255,42 @@ const WeeklyBoard: React.FC<{
     
     console.log('Moving assignment:', assignmentId, 'to column:', newColumnId);
     
-    // Find the assignment
-    const assignment = board.assignments.find(a => a.id === assignmentId);
+    // Map column IDs to status values
+    const statusMap: Record<string, AssignmentStatus> = {
+      'not-started': 'NOT_STARTED',
+      'in-progress': 'IN_PROGRESS',
+      'done': 'DONE'
+    };
+
+    const newStatus = statusMap[newColumnId];
+    if (!newStatus) return;
+
+    // Find the assignment in the current columns
+    let assignment: AssignmentWithId | undefined;
+    
+    for (const column of columns) {
+      assignment = column.assignments.find(a => a.id === assignmentId);
+      if (assignment) break;
+    }
+    
     if (!assignment) {
       console.log('Assignment not found:', assignmentId);
+      console.log('Available assignments:', columns.flatMap(c => c.assignments.map(a => a.id)));
       return;
     }
     
-    // Update columns
-    setColumns(prevColumns => {
-      console.log('Previous columns:', prevColumns.map(c => ({ id: c.id, count: c.assignments.length })));
+    try {
+      // Update status in database first
+      await updateAssignmentStatus(assignmentId, newStatus);
       
-      const newColumns = prevColumns.map(column => ({
-        ...column,
-        assignments: column.assignments.filter(a => a.id !== assignmentId)
-      }));
+      // Refresh data to get the latest status from database
+      await onRefreshData();
       
-      const targetColumn = newColumns.find(col => col.id === newColumnId);
-      if (targetColumn) {
-        targetColumn.assignments.push(assignment);
-        console.log('Added assignment to column:', newColumnId);
-      } else {
-        console.log('Target column not found:', newColumnId);
-      }
-      
-      console.log('New columns:', newColumns.map(c => ({ id: c.id, count: c.assignments.length })));
-      return newColumns;
-    });
-    
-    onAssignmentMove(assignmentId, newColumnId, board.weekNumber);
+      onAssignmentMove(assignmentId, newColumnId, board.weekNumber);
+    } catch (error) {
+      console.error('Failed to update assignment status:', error);
+      // Optionally show user feedback
+    }
   };
 
   return (
@@ -292,33 +320,32 @@ const WeeklyBoard: React.FC<{
 const AllAssignmentsBoard: React.FC<{
   board: AllAssignmentsBoard;
   courseColors: Record<string, string>;
-  assignmentStatuses: Record<string, string>;
   onAssignmentMove: (assignmentId: string, newColumn: string) => void;
   onDeleteAssignment: (assignmentId: string) => void;
+  onRefreshData: () => Promise<void>;
   isUnified?: boolean;
-}> = ({ board, courseColors, assignmentStatuses, onAssignmentMove, onDeleteAssignment, isUnified = false }) => {
+}> = ({ board, courseColors, onAssignmentMove, onDeleteAssignment, onRefreshData, isUnified = false }) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: 'not-started', title: 'Not Started', assignments: board.assignments },
     { id: 'in-progress', title: 'In Progress', assignments: [] },
     { id: 'done', title: 'Done', assignments: [] },
   ]);
 
-  // Update columns based on assignment statuses
+  // Update columns based on assignment statuses from database
   useEffect(() => {
     const notStarted: AssignmentWithId[] = [];
     const inProgress: AssignmentWithId[] = [];
     const done: AssignmentWithId[] = [];
 
     board.assignments.forEach(assignment => {
-      const status = assignmentStatuses[assignment.id] || 'not-started';
-      switch (status) {
-        case 'not-started':
+      switch (assignment.status) {
+        case 'NOT_STARTED':
           notStarted.push(assignment);
           break;
-        case 'in-progress':
+        case 'IN_PROGRESS':
           inProgress.push(assignment);
           break;
-        case 'done':
+        case 'DONE':
           done.push(assignment);
           break;
       }
@@ -329,7 +356,7 @@ const AllAssignmentsBoard: React.FC<{
       { id: 'in-progress', title: 'In Progress', assignments: inProgress },
       { id: 'done', title: 'Done', assignments: done },
     ]);
-  }, [board.assignments, assignmentStatuses]);
+  }, [board.assignments]);
 
   const handleDeleteAssignment = (assignmentId: string) => {
     if (window.confirm('Are you sure you want to delete this assignment?')) {
@@ -337,18 +364,40 @@ const AllAssignmentsBoard: React.FC<{
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) return;
 
-    const assignmentId = active.id as string;
+    const assignmentId = active.id as number;
     const newColumnId = over.id as string;
 
     const validColumns = ['not-started', 'in-progress', 'done'];
     if (!validColumns.includes(newColumnId)) return;
 
-    onAssignmentMove(assignmentId, newColumnId);
+    // Map column IDs to status values
+    const statusMap: Record<string, AssignmentStatus> = {
+      'not-started': 'NOT_STARTED',
+      'in-progress': 'IN_PROGRESS',
+      'done': 'DONE'
+    };
+
+    const newStatus = statusMap[newColumnId];
+    if (!newStatus) return;
+
+    try {
+      // Update status in database
+      await updateAssignmentStatus(assignmentId, newStatus);
+      
+      // Refresh data to get the latest status from database
+      await onRefreshData();
+      
+      // Update local state
+      onAssignmentMove(assignmentId.toString(), newColumnId);
+    } catch (error) {
+      console.error('Failed to update assignment status:', error);
+      // Optionally show user feedback
+    }
   };
 
   return (
@@ -377,16 +426,66 @@ const AllAssignmentsBoard: React.FC<{
   );
 };
 
-const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false }) => {
+const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false, onDataRefresh }) => {
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedBoardType, setSelectedBoardType] = useState<'weekly' | 'all-assignments'>('weekly');
-  const [assignmentStatuses, setAssignmentStatuses] = useState<Record<string, string>>({});
+  const [freshData, setFreshData] = useState<AssignmentData | AssignmentData[] | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Function to refresh data from the database
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await getAllSyllabi();
+      if (response.success && response.data) {
+        const freshSyllabi = response.data;
+        
+        if (isUnified) {
+          // For unified view, use all syllabi
+          setFreshData(freshSyllabi);
+          if (onDataRefresh) {
+            onDataRefresh(freshSyllabi);
+          }
+        } else {
+          // For single syllabus view, find the matching syllabus
+          const currentSyllabusId = Array.isArray(data) ? data[0]?.id : data.id;
+          const matchingSyllabus = freshSyllabi.find((s: any) => s.id === currentSyllabusId);
+          if (matchingSyllabus) {
+            setFreshData(matchingSyllabus);
+            if (onDataRefresh) {
+              onDataRefresh(matchingSyllabus);
+            }
+          } else {
+            // Fallback to original data if not found
+            setFreshData(data);
+          }
+        }
+      } else {
+        // Fallback to original data if fetch fails
+        setFreshData(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch fresh data:', error);
+      // Fallback to original data if fetch fails
+      setFreshData(data);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Refresh data when component mounts
+  useEffect(() => {
+    refreshData();
+  }, [data, isUnified, onDataRefresh]);
+
+  // Use fresh data if available, otherwise fall back to original data
+  const currentData = freshData || data;
 
   // Process assignments and group by weeks
   const weeklyBoards = useMemo(() => {
     // Handle both single data and array of data
-    const allAssignments = Array.isArray(data) 
-      ? data.flatMap(syllabus => 
+    const allAssignments = Array.isArray(currentData) 
+      ? currentData.flatMap(syllabus => 
           syllabus.assignments.map(assignment => ({
             ...assignment,
             courseCode: syllabus.course_code,
@@ -394,14 +493,14 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
             syllabus_id: syllabus.id
           }))
         )
-      : data.assignments.map(assignment => ({
+      : currentData.assignments.map(assignment => ({
           ...assignment,
-          courseCode: data.course_code,
-          class_name: data.class_name,
-          syllabus_id: data.id
+          courseCode: currentData.course_code,
+          class_name: currentData.class_name,
+          syllabus_id: currentData.id
         }));
 
-    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment, index) => {
+    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment) => {
       const dateTimeString = `${assignment.due_date} ${assignment.due_time}`;
       let dueDateTime: Date;
       
@@ -419,7 +518,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
       
       return {
         ...assignment,
-        id: `assignment-${assignment.syllabus_id}-${index}`,
+        // Use database ID from assignment.id
         dueDateTime,
         courseCode: assignment.courseCode,
       };
@@ -468,13 +567,13 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
     }
 
     return boards;
-  }, [data]);
+  }, [currentData]);
 
   // Create all assignments board
   const allAssignmentsBoard = useMemo(() => {
     // Handle both single data and array of data
-    const allAssignments = Array.isArray(data) 
-      ? data.flatMap(syllabus => 
+    const allAssignments = Array.isArray(currentData) 
+      ? currentData.flatMap(syllabus => 
           syllabus.assignments.map(assignment => ({
             ...assignment,
             courseCode: syllabus.course_code,
@@ -482,14 +581,14 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
             syllabus_id: syllabus.id
           }))
         )
-      : data.assignments.map(assignment => ({
+      : currentData.assignments.map(assignment => ({
           ...assignment,
-          courseCode: data.course_code,
-          class_name: data.class_name,
-          syllabus_id: data.id
+          courseCode: currentData.course_code,
+          class_name: currentData.class_name,
+          syllabus_id: currentData.id
         }));
 
-    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment, index) => {
+    const assignmentsWithId: AssignmentWithId[] = allAssignments.map((assignment) => {
       const dateTimeString = `${assignment.due_date} ${assignment.due_time}`;
       let dueDateTime: Date;
       
@@ -507,7 +606,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
       
       return {
         ...assignment,
-        id: `assignment-${assignment.syllabus_id}-${index}`,
+        // Use database ID from assignment.id
         dueDateTime,
         courseCode: assignment.courseCode,
       };
@@ -518,7 +617,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
       title: isUnified ? 'All Assignments (Unified View)' : 'All Assignments',
       assignments: assignmentsWithId,
     };
-  }, [data, isUnified]);
+  }, [currentData, isUnified]);
 
   // Generate course colors
   const courseColors = useMemo(() => {
@@ -556,8 +655,8 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
     }
   }, [weeklyBoards, selectedWeek, selectedBoardType]);
 
-  const handleAssignmentMove = (assignmentId: string, newColumn: string, weekNumber: number) => {
-    // This could be used to persist changes or sync with parent component
+  const handleAssignmentMove = (assignmentId: number, newColumn: string, weekNumber: number) => {
+    // Status updates are now handled in the drag end handler
     console.log(`Assignment ${assignmentId} moved to ${newColumn} in week ${weekNumber}`);
   };
 
@@ -567,20 +666,31 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
     // For now, the assignment is removed from the local state in the WeeklyBoard component
   };
 
-  const handleAllAssignmentsMove = (assignmentId: string, newColumn: string) => {
-    setAssignmentStatuses(prev => ({
-      ...prev,
-      [assignmentId]: newColumn,
-    }));
+  const handleAllAssignmentsMove = async (assignmentId: string, newColumn: string) => {
+    // Map column IDs to status values
+    const statusMap: Record<string, AssignmentStatus> = {
+      'not-started': 'NOT_STARTED',
+      'in-progress': 'IN_PROGRESS',
+      'done': 'DONE'
+    };
+
+    const newStatus = statusMap[newColumn];
+    if (!newStatus) return;
+
+    try {
+      // Update status in database
+      await updateAssignmentStatus(parseInt(assignmentId), newStatus);
+      
+      // Refresh data to get the latest status from database
+      await refreshData();
+    } catch (error) {
+      console.error('Failed to update assignment status:', error);
+    }
   };
 
   const handleAllAssignmentsDelete = (assignmentId: string) => {
-    // Remove from status tracking
-    setAssignmentStatuses(prev => {
-      const newStatuses = { ...prev };
-      delete newStatuses[assignmentId];
-      return newStatuses;
-    });
+    // Status tracking is no longer needed as it's handled by the database
+    console.log(`Assignment ${assignmentId} deleted`);
   };
 
 
@@ -604,23 +714,30 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
         <h1>
           {isUnified 
             ? 'Unified Kanban Board - All Courses' 
-            : `Kanban Board - ${Array.isArray(data) ? 'Multiple Courses' : data.class_name}`
+            : `Kanban Board - ${Array.isArray(currentData) ? 'Multiple Courses' : currentData.class_name}`
           }
         </h1>
         <div className="course-info">
           {isUnified ? (
             <span className="course-code">
-              {Array.isArray(data) ? `${data.length} course${data.length !== 1 ? 's' : ''}` : '1 course'}
+              {Array.isArray(currentData) ? `${currentData.length} course${currentData.length !== 1 ? 's' : ''}` : '1 course'}
             </span>
           ) : (
             <span className="course-code">
-              {Array.isArray(data) ? 'Multiple Courses' : data.course_code}
+              {Array.isArray(currentData) ? 'Multiple Courses' : currentData.course_code}
             </span>
           )}
         </div>
-      </div>
+        </div>
 
-      <div className="kanban-layout">
+        {isRefreshing && (
+          <div className="refreshing-indicator">
+            <div className="loading-spinner"></div>
+            <span>Refreshing assignment data...</span>
+          </div>
+        )}
+
+        <div className="kanban-layout">
         <div className="sidebar">
           <div className="sidebar-header">
             <h3>Boards</h3>
@@ -681,9 +798,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
                 key="all-assignments"
                 board={allAssignmentsBoard}
                 courseColors={courseColors}
-                assignmentStatuses={assignmentStatuses}
                 onAssignmentMove={handleAllAssignmentsMove}
                 onDeleteAssignment={handleAllAssignmentsDelete}
+                onRefreshData={refreshData}
                 isUnified={isUnified}
               />
             </div>
@@ -699,6 +816,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({ data, onBack, isUnified = false
                 courseColors={courseColors}
                 onAssignmentMove={handleAssignmentMove}
                 onDeleteAssignment={handleDeleteAssignment}
+                onRefreshData={refreshData}
                 isUnified={isUnified}
               />
             </div>
