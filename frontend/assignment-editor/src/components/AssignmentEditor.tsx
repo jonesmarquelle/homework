@@ -148,10 +148,18 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
         onDataChange(updatedData);
       }
       
-      // Close the modal if it's open
+      // Close the modal and execute the pending action if there is one
       if (showConfirmModal) {
         setShowConfirmModal(false);
+        const actionToExecute = pendingAction;
         setPendingAction(null);
+        
+        // Execute the pending action after a brief delay to ensure state is updated
+        if (actionToExecute) {
+          setTimeout(() => {
+            actionToExecute();
+          }, 100);
+        }
       }
       
       console.log('Changes saved successfully');
@@ -191,10 +199,119 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
     });
   };
 
-  const handleExportToGoogleCalendar = () => {
+  const handleExportToCalendarCSV = () => {
     handleActionWithConfirmation(() => {
-      console.log('Exporting to Google Calendar...');
+      exportToCalendarCSV();
     });
+  };
+
+  const exportToCalendarCSV = () => {
+    // Create CSV content according to Google Calendar format
+    const csvHeaders = [
+      'Subject',
+      'Start Date',
+      'Start Time',
+      'End Date',
+      'End Time',
+      'All Day Event',
+      'Description',
+      'Location',
+      'Private'
+    ];
+
+    // Convert assignments to CSV rows
+    const csvRows = assignments.map(assignment => {
+      // Format the assignment name with course code for clarity
+      const subject = `${courseCode}: ${assignment.name}`;
+      
+      // Use the due date as both start and end date (assuming assignments are due on a specific day)
+      const startDate = assignment.due_date;
+      const endDate = assignment.due_date;
+      
+      // Parse the time and format it properly
+      const timeString = assignment.due_time;
+      const startTime = timeString;
+      
+      // Calculate end time (assuming 1 hour duration for assignments)
+      // This is a simple approach - you might want to make this configurable
+      const endTime = calculateEndTime(timeString);
+      
+      // Create description with submission link if available
+      const description = assignment.submission_link 
+        ? `Assignment due for ${courseName}. Submission link: ${assignment.submission_link}`
+        : `Assignment due for ${courseName}`;
+      
+      // Location is empty for assignments
+      const location = '';
+      
+      // Return CSV row with proper escaping for commas
+      return [
+        `"${subject}"`,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        'False',
+        `"${description}"`,
+        `"${location}"`,
+        'False'
+      ].join(',');
+    });
+
+    // Combine headers and rows
+    const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${courseCode}_assignments_calendar.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log('CSV exported successfully');
+  };
+
+  const calculateEndTime = (startTime: string): string => {
+    // Simple time calculation - adds 1 hour to the start time
+    // This handles basic time formats like "11:59 PM", "2:30 PM", etc.
+    try {
+      const [time, period] = startTime.split(' ');
+      const [hours, minutes] = time.split(':');
+      
+      let hour24 = parseInt(hours);
+      if (period === 'PM' && hour24 !== 12) {
+        hour24 += 12;
+      } else if (period === 'AM' && hour24 === 12) {
+        hour24 = 0;
+      }
+      
+      // Add 1 hour
+      hour24 = (hour24 + 1) % 24;
+      
+      // Convert back to 12-hour format
+      let hour12 = hour24;
+      let newPeriod = 'AM';
+      
+      if (hour24 === 0) {
+        hour12 = 12;
+      } else if (hour24 === 12) {
+        hour12 = 12;
+        newPeriod = 'PM';
+      } else if (hour24 > 12) {
+        hour12 = hour24 - 12;
+        newPeriod = 'PM';
+      }
+      
+      return `${hour12}:${minutes} ${newPeriod}`;
+    } catch (error) {
+      // If parsing fails, just return the original time
+      console.warn('Could not parse time for end time calculation:', startTime);
+      return startTime;
+    }
   };
 
   return (
@@ -233,7 +350,7 @@ const AssignmentEditor: React.FC<AssignmentEditorProps> = ({ data, onViewKanban,
       <div className="action-buttons">
         <button 
           className="action-btn export-btn" 
-          onClick={handleExportToGoogleCalendar}
+          onClick={handleExportToCalendarCSV}
         >
           Export to Google Calendar
         </button>
